@@ -5,35 +5,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
+import { useTournaments } from "@/context/TournamentContext";
 
 const Tournament = () => {
   const { id } = useParams();
+  const { tournaments } = useTournaments();
 
-  // Mock data - en una aplicación real vendría de una API
-  const tournament = {
-    id: "1",
-    name: "Copa Primavera 2024",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=400&fit=crop",
-    location: "Club Deportivo Central",
-    address: "Av. Principal 123, Buenos Aires",
-    startDate: "15 de Marzo, 2024",
-    endDate: "17 de Marzo, 2024",
-    startTime: "09:00",
-    endTime: "18:00",
-    participants: 24,
-    maxParticipants: 32,
-    prize: "$50,000",
-    status: "active" as const,
-    registrationFee: "$1,200",
-    duration: "3 días",
-    description: "El torneo más esperado del año llega con grandes premios y la participación de los mejores jugadores de la región. Disfruta de tres días intensos de pádel de alto nivel.",
-    staff: "Juan Pérez - Director del Torneo",
-    rules: [
-      "Formato de eliminación directa",
-      "Partidos a mejor de 3 sets",
-      "Tiempo máximo por partido: 90 minutos",
-      "Equipamiento oficial requerido"
-    ]
+  // Obtener el torneo correspondiente al id de la URL
+  const tournament = tournaments.find(t => t.id === id);
+
+  // Si no se encuentra el torneo, mostrar mensaje de error
+  if (!tournament) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Torneo no encontrado</h1>
+            <p className="text-muted-foreground">El torneo que buscas no existe o ha sido eliminado.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Datos adicionales del torneo (mock por ahora, en una app real vendrían de la API)
+  const tournamentDetails = {
+    address: tournament.address ?? "Dirección no especificada",
+    startTime: tournament.startTime ?? "09:00",
+    endTime: tournament.endTime ?? "18:00",
+    duration: "3 días", // Podría calcularse de startDate y endDate
+    description: tournament.description ?? "Descripción no disponible.",
+    staff: tournament.staff ?? "Staff no especificado",
+    rules: Array.isArray((tournament as any).rules) ? (tournament as any).rules : []
   };
 
   const statusConfig = {
@@ -110,14 +114,14 @@ const Tournament = () => {
                     <CardTitle>Reglas y Formato</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-2">
-                      {tournament.rules.map((rule, index) => (
-                        <li key={index} className="flex items-center text-muted-foreground">
-                          <ArrowRight className="w-4 h-4 mr-2 text-primary" />
-                          {rule}
-                        </li>
-                      ))}
-                    </ul>
+                <ul className="space-y-2">
+                  {tournamentDetails.rules.map((rule, index) => (
+                    <li key={index} className="flex items-center text-muted-foreground">
+                      <ArrowRight className="w-4 h-4 mr-2 text-primary" />
+                      {rule}
+                    </li>
+                  ))}
+                </ul>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -204,7 +208,7 @@ const Tournament = () => {
                   <Users className="w-5 h-5 mr-3 text-muted-foreground" />
                   <div>
                     <div className="font-medium">{tournament.participants}/{tournament.maxParticipants} participantes</div>
-                    <div className="text-sm text-muted-foreground">Duración: {tournament.duration}</div>
+                    <div className="text-sm text-muted-foreground">Duración: {tournamentDetails.duration}</div>
                   </div>
                 </div>
                 

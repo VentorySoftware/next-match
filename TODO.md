@@ -1,14 +1,26 @@
-# TODO: Implementar estado global para torneos
+# TODO: Corregir redirección de "Ver detalles" en torneos
 
-## Pasos a completar:
-- [x] Crear TournamentContext.tsx para manejar el estado global de torneos
-- [x] Actualizar App.tsx para envolver con TournamentProvider
-- [x] Modificar CreateTournament.tsx para agregar torneos al contexto
-- [x] Actualizar Tournaments.tsx para consumir torneos del contexto
-- [x] Probar la creación y listado de torneos
+## Información recopilada
+- El botón "Ver Detalles" en TournamentCard redirige a `/tournament/${id}`.
+- La ruta `/tournament/:id` está mapeada al componente Tournament.
+- El componente Tournament usa datos mock hardcodeados en lugar de obtener el torneo por id.
+- El contexto TournamentContext tiene la lista de torneos pero no un método para obtener por id.
 
-## Resumen de cambios:
-- Se creó un contexto global (TournamentContext) para manejar el estado de los torneos
-- Se actualizó la aplicación para usar el contexto en lugar de datos estáticos
-- Ahora los torneos creados aparecen inmediatamente en la lista
-- La aplicación está corriendo en http://localhost:8081/
+## Plan de corrección
+- [] Modificar src/pages/Tournament.tsx para usar el contexto TournamentContext.
+- [] Obtener el torneo correspondiente al id de la URL usando useParams.
+- [] Reemplazar los datos mock por los datos reales del torneo obtenido.
+- [] Añadir manejo de error si no se encuentra el torneo (mostrar mensaje o redirigir).
+- [] Probar la navegación desde la lista de torneos a la página de detalles.
+
+## Archivos a modificar
+- src/pages/Tournament.tsx (cambio principal)
+- Posiblemente src/context/TournamentContext.tsx (si se añade método auxiliar)
+
+## Pasos de implementación
+- [] Leer el archivo Tournament.tsx actual.
+- [] Importar useTournaments del contexto.
+- [] Usar find() para obtener el torneo por id.
+- [] Reemplazar el objeto mock por el torneo encontrado.
+- [] Añadir condición para torneo no encontrado.
+- [] Probar la funcionalidad.
