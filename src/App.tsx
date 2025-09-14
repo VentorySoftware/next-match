@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Tournaments from "./pages/Tournaments";
+import CreateTournament from "./pages/CreateTournament";
 import Tournament from "./pages/Tournament";
 import Bracket from "./pages/Bracket";
 import NotFound from "./pages/NotFound";
@@ -20,6 +21,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/tournaments" element={<Tournaments />} />
+          <Route path="/tournaments/create" element={<CreateTournament />} />
           <Route path="/tournament/:id" element={<Tournament />} />
           <Route path="/tournament/:id/bracket" element={<Bracket />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Search, Filter, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -88,10 +89,12 @@ const Tournaments = () => {
             </p>
           </div>
           
-          <Button className="mt-4 lg:mt-0 bg-gradient-hero hover:shadow-primary">
-            <Plus className="w-4 h-4 mr-2" />
-            Crear Torneo
-          </Button>
+          <Link to="/tournaments/create">
+            <Button className="mt-4 lg:mt-0 bg-gradient-hero hover:shadow-primary">
+              <Plus className="w-4 h-4 mr-2" />
+              Crear Torneo
+            </Button>
+          </Link>
         </div>
 
         {/* Filters */}
