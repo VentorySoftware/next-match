@@ -8,11 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useTournaments } from "@/context/TournamentContext";
 import Navigation from "@/components/Navigation";
 
 const CreateTournament = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addTournament } = useTournaments();
   
   const [formData, setFormData] = useState({
     name: "",
@@ -57,6 +59,23 @@ const CreateTournament = () => {
 
     // Simular creación del torneo
     setTimeout(() => {
+      addTournament({
+        name: formData.name,
+        location: formData.location,
+        address: formData.address,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        maxParticipants: Number(formData.maxParticipants) || 0,
+        prize: formData.prize,
+        registrationFee: formData.registrationFee,
+        description: formData.description,
+        staff: formData.staff,
+        image: formData.image,
+        dataSource: formData.dataSource,
+      });
+
       toast({
         title: "¡Torneo creado exitosamente!",
         description: `${formData.name} ha sido creado y está pendiente de aprobación.`,
