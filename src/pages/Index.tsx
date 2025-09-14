@@ -47,18 +47,24 @@ const Index = () => {
         <div className="relative container mx-auto px-4 py-20 lg:py-32">
           <div className="max-w-3xl">
             <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 animate-fade-up">
-              Sistema de Gestión de
               <span className="block bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                Torneos de Pádel
+                Next Match
+              </span>
+              <span className="text-3xl lg:text-4xl block mt-2">
+                Sistema de Gestión de Torneos de Pádel
               </span>
             </h1>
             
-            <p className="text-xl text-white/90 mb-8 animate-fade-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-xl text-white/90 mb-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
               Plataforma profesional para organizar, gestionar y seguir torneos de pádel.
               Desde la inscripción hasta la entrega de premios.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 animate-fade-up" style={{ animationDelay: '0.4s' }}>
+            <div className="text-lg text-white/70 mb-8 animate-fade-up" style={{ animationDelay: "0.3s" }}>
+              Desarrollado por <span className="font-semibold text-white">NUVEM Software</span>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 animate-fade-up" style={{ animationDelay: "0.5s" }}>
               <Link to="/tournaments">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow">
                   Ver Torneos
@@ -117,7 +123,7 @@ const Index = () => {
             ¿Listo para organizar tu próximo torneo?
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Únete a la plataforma líder en gestión de torneos de pádel y brinda una experiencia profesional a tus participantes.
+            Únete a Next Match, la plataforma líder en gestión de torneos de pádel y brinda una experiencia profesional a tus participantes.
           </p>
           <Link to="/tournaments">
             <Button size="lg" className="bg-white text-primary hover:bg-white/90 hover:shadow-glow">
@@ -125,6 +131,10 @@ const Index = () => {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
+          
+          <div className="mt-8 text-white/60">
+            <p>Una solución de NUVEM Software</p>
+          </div>
         </div>
       </section>
     </div>

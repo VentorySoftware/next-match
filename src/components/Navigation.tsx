@@ -19,7 +19,7 @@ const Navigation = () => {
               <Trophy className="w-5 h-5 text-white" />
             </div>
             <span className="bg-gradient-hero bg-clip-text text-transparent">
-              PadelTournaments
+              Next Match
             </span>
           </Link>
           
