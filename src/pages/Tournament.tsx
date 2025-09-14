@@ -230,9 +230,11 @@ const Tournament = () => {
               </CardContent>
             </Card>
 
-            <Button className="w-full bg-gradient-hero hover:shadow-primary" size="lg">
-              Inscribirse al Torneo
-            </Button>
+            {tournament.status === 'pending' && tournament.participants < tournament.maxParticipants && (
+              <Button className="w-full bg-gradient-hero hover:shadow-primary" size="lg">
+                Inscribirse al Torneo
+              </Button>
+            )}
           </div>
         </div>
       </div>
