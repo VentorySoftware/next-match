@@ -27,9 +27,6 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme("dark")} className="hover:bg-accent">
           Oscuro
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")} className="hover:bg-accent">
-          Sistema
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
