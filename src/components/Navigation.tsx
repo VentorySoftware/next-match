@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Trophy, Calendar, Users, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navigation = () => {
   const location = useLocation();
@@ -44,6 +45,7 @@ const Navigation = () => {
                 </Link>
               );
             })}
+            <ThemeToggle />
           </div>
         </div>
       </div>
