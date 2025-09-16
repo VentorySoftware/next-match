@@ -1,18 +1,29 @@
 import { useParams, Link } from "react-router-dom";
-import { Calendar, MapPin, Users, Trophy, DollarSign, Eye, ArrowRight } from "lucide-react";
+import { Calendar, MapPin, Users, Trophy, DollarSign, Eye, ArrowRight, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Navigation from "@/components/Navigation";
 import { useTournaments } from "@/context/TournamentContext";
+import { useParticipants } from "@/context/ParticipantContext";
+import { ParticipantRegistration } from "@/components/ParticipantRegistration";
+import { ParticipantsList } from "@/components/ParticipantsList";
+import { useState } from "react";
 
 const Tournament = () => {
   const { id } = useParams();
   const { tournaments } = useTournaments();
+  const { getParticipantsByTournament } = useParticipants();
+  const [registrationOpen, setRegistrationOpen] = useState(false);
 
   // Obtener el torneo correspondiente al id de la URL
   const tournament = tournaments.find(t => t.id === id);
+  
+  // Obtener participantes reales del torneo
+  const realParticipants = getParticipantsByTournament(id || '');
+  const participantCount = realParticipants.length;
 
   // Si no se encuentra el torneo, mostrar mensaje de error
   if (!tournament) {
@@ -156,27 +167,8 @@ const Tournament = () => {
                 </Card>
               </TabsContent>
               
-              <TabsContent value="participants">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lista de Participantes</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {[
-                        "García/López", "Martín/Silva", "Rodríguez/Pérez", "González/Torres",
-                        "Fernández/Díaz", "Castro/Morales", "Ruiz/Herrera", "Vargas/Mendoza"
-                      ].map((team, index) => (
-                        <div key={index} className="flex items-center space-x-3 p-3 bg-accent/30 rounded-lg">
-                          <div className="w-8 h-8 bg-gradient-hero rounded-full flex items-center justify-center">
-                            <span className="text-white font-medium text-sm">{index + 1}</span>
-                          </div>
-                          <span className="font-medium">{team}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="participants" className="space-y-4">
+                <ParticipantsList tournamentId={id || ''} />
               </TabsContent>
             </Tabs>
           </div>
@@ -207,7 +199,7 @@ const Tournament = () => {
                 <div className="flex items-center">
                   <Users className="w-5 h-5 mr-3 text-muted-foreground" />
                   <div>
-                    <div className="font-medium">{tournament.participants}/{tournament.maxParticipants} participantes</div>
+                    <div className="font-medium">{participantCount}/{tournament.maxParticipants} participantes</div>
                     <div className="text-sm text-muted-foreground">Duración: {tournamentDetails.duration}</div>
                   </div>
                 </div>
@@ -230,10 +222,24 @@ const Tournament = () => {
               </CardContent>
             </Card>
 
-            {tournament.status === 'pending' && tournament.participants < tournament.maxParticipants && (
-              <Button className="w-full bg-gradient-hero hover:shadow-primary" size="lg">
-                Inscribirse al Torneo
-              </Button>
+            {tournament.status === 'pending' && participantCount < tournament.maxParticipants && (
+              <Dialog open={registrationOpen} onOpenChange={setRegistrationOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-gradient-hero hover:shadow-primary" size="lg">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Inscribirse al Torneo
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Inscripción - {tournament.name}</DialogTitle>
+                  </DialogHeader>
+                  <ParticipantRegistration 
+                    tournamentId={id || ''}
+                    onSuccess={() => setRegistrationOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
             )}
           </div>
         </div>

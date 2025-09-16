@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TournamentProvider } from "./context/TournamentContext";
+import { ParticipantProvider } from "./context/ParticipantContext";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Index from "./pages/Index";
 import Tournaments from "./pages/Tournaments";
@@ -21,7 +22,8 @@ const App = () => (
         <Toaster />
         <Sonner />
         <TournamentProvider>
-          <BrowserRouter>
+          <ParticipantProvider>
+            <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/tournaments" element={<Tournaments />} />
@@ -31,7 +33,8 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
+            </BrowserRouter>
+          </ParticipantProvider>
         </TournamentProvider>
       </TooltipProvider>
     </QueryClientProvider>
