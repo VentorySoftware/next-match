@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Participant, ParticipantPair } from '@/types/participant';
+import { useZapier } from './ZapierContext';
 
 interface ParticipantContextType {
   participants: Participant[];
@@ -28,6 +29,7 @@ interface ParticipantProviderProps {
 export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ children }) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [pairs, setPairs] = useState<ParticipantPair[]>([]);
+  const { sendToGoogleSheets } = useZapier();
 
   // Cargar datos del localStorage al inicializar
   useEffect(() => {
@@ -60,6 +62,9 @@ export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ childr
       status: 'registered'
     };
     setParticipants(prev => [...prev, participant]);
+    
+    // Enviar a Google Sheets si está configurado
+    sendToGoogleSheets(participant, 'participant').catch(console.error);
   };
 
   const cancelRegistration = (participantId: string) => {

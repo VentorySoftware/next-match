@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useZapier } from './ZapierContext';
 
 export interface Tournament {
   id: string;
@@ -40,6 +41,8 @@ interface TournamentProviderProps {
 }
 
 export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children }) => {
+  const { sendToGoogleSheets } = useZapier();
+  
   // Mock data inicial
   const [tournaments, setTournaments] = useState<Tournament[]>([
     {
@@ -104,6 +107,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
       status: 'pending' // Estado inicial
     };
     setTournaments(prev => [...prev, tournament]);
+    
+    // Enviar a Google Sheets si está configurado
+    sendToGoogleSheets(tournament, 'tournament').catch(console.error);
   };
 
   return (

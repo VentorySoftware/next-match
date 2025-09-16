@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Calendar, Users, Home } from "lucide-react";
+import { Trophy, Calendar, Users, Home, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -9,6 +9,7 @@ const Navigation = () => {
   const navItems = [
     { href: "/", icon: Home, label: "Inicio" },
     { href: "/tournaments", icon: Trophy, label: "Torneos" },
+    { href: "/settings", icon: Settings, label: "Configuración" },
   ];
 
   return (
