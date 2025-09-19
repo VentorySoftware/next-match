@@ -23,24 +23,24 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <TournamentProvider>
-          <ParticipantProvider>
-            <ZapierProvider>
+        <ZapierProvider>
+          <TournamentProvider>
+            <ParticipantProvider>
               <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-                <Route path="/tournaments" element={<Tournaments />} />
-                <Route path="/tournaments/create" element={<CreateTournament />} />
-                <Route path="/tournament/:id" element={<Tournament />} />
-                <Route path="/tournament/:id/bracket" element={<Bracket />} />
-                <Route path="/settings" element={<Settings />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/tournaments" element={<Tournaments />} />
+                  <Route path="/tournaments/create" element={<CreateTournament />} />
+                  <Route path="/tournament/:id" element={<Tournament />} />
+                  <Route path="/tournament/:id/bracket" element={<Bracket />} />
+                  <Route path="/settings" element={<Settings />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
               </BrowserRouter>
-            </ZapierProvider>
-          </ParticipantProvider>
-        </TournamentProvider>
+            </ParticipantProvider>
+          </TournamentProvider>
+        </ZapierProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>
