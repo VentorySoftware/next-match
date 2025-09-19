@@ -57,9 +57,8 @@ const CreateTournament = () => {
       return;
     }
 
-    // Simular creación del torneo
-    setTimeout(() => {
-      addTournament({
+    try {
+      await addTournament({
         name: formData.name,
         location: formData.location,
         address: formData.address,
@@ -72,18 +71,26 @@ const CreateTournament = () => {
         registrationFee: formData.registrationFee,
         description: formData.description,
         staff: formData.staff,
-        image: formData.image,
+        image: formData.image || "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop",
         dataSource: formData.dataSource,
       });
 
       toast({
         title: "¡Torneo creado exitosamente!",
-        description: `${formData.name} ha sido creado y está pendiente de aprobación.`,
+        description: `${formData.name} ha sido creado y guardado en la base de datos.`,
       });
       
-      setIsSubmitting(false);
       navigate("/tournaments");
-    }, 1500);
+    } catch (error) {
+      console.error('Error creating tournament:', error);
+      toast({
+        title: "Error al crear torneo",
+        description: "Hubo un problema al crear el torneo. Por favor intenta de nuevo.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
