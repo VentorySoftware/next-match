@@ -14,7 +14,174 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      participant_pairs: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          player1_id: string
+          player2_id: string
+          registration_date: string
+          tournament_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          player1_id: string
+          player2_id: string
+          registration_date?: string
+          tournament_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          player1_id?: string
+          player2_id?: string
+          registration_date?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participant_pairs_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participant_pairs_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participant_pairs_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          category: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          partner_id: string | null
+          partner_name: string | null
+          phone: string
+          registration_date: string
+          status: string
+          tournament_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          partner_id?: string | null
+          partner_name?: string | null
+          phone: string
+          registration_date?: string
+          status?: string
+          tournament_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          partner_id?: string | null
+          partner_name?: string | null
+          phone?: string
+          registration_date?: string
+          status?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          address: string | null
+          created_at: string
+          data_source: string | null
+          description: string | null
+          end_date: string
+          end_time: string | null
+          id: string
+          image: string | null
+          location: string
+          max_participants: number
+          name: string
+          participants: number
+          prize: string
+          registration_fee: string
+          staff: string | null
+          start_date: string
+          start_time: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          data_source?: string | null
+          description?: string | null
+          end_date: string
+          end_time?: string | null
+          id?: string
+          image?: string | null
+          location: string
+          max_participants: number
+          name: string
+          participants?: number
+          prize: string
+          registration_fee: string
+          staff?: string | null
+          start_date: string
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          data_source?: string | null
+          description?: string | null
+          end_date?: string
+          end_time?: string | null
+          id?: string
+          image?: string | null
+          location?: string
+          max_participants?: number
+          name?: string
+          participants?: number
+          prize?: string
+          registration_fee?: string
+          staff?: string | null
+          start_date?: string
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

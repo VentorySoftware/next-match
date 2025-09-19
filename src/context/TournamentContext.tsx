@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useZapier } from './ZapierContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Tournament {
   id: string;
@@ -23,7 +24,9 @@ export interface Tournament {
 
 interface TournamentContextType {
   tournaments: Tournament[];
-  addTournament: (tournament: Omit<Tournament, 'id' | 'participants' | 'status'>) => void;
+  loading: boolean;
+  addTournament: (tournament: Omit<Tournament, 'id' | 'participants' | 'status'>) => Promise<void>;
+  loadTournaments: () => Promise<void>;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(undefined);
@@ -42,78 +45,117 @@ interface TournamentProviderProps {
 
 export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children }) => {
   const { sendToGoogleSheets } = useZapier();
-  
-  // Mock data inicial
-  const [tournaments, setTournaments] = useState<Tournament[]>([
-    {
-      id: "1",
-      name: "Copa Primavera 2024",
-      image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop",
-      location: "Club Deportivo Central",
-      startDate: "15 Mar",
-      endDate: "17 Mar",
-      participants: 24,
-      maxParticipants: 32,
-      prize: "$50,000",
-      status: "active",
-      registrationFee: "$1,200"
-    },
-    {
-      id: "2",
-      name: "Torneo Empresarial",
-      image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=300&fit=crop",
-      location: "Padel Arena Norte",
-      startDate: "22 Mar",
-      endDate: "24 Mar",
-      participants: 16,
-      maxParticipants: 24,
-      prize: "$25,000",
-      status: "pending",
-      registrationFee: "$800"
-    },
-    {
-      id: "3",
-      name: "Championship Masters",
-      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=300&fit=crop",
-      location: "Centro Deportivo Elite",
-      startDate: "8 Mar",
-      endDate: "10 Mar",
-      participants: 32,
-      maxParticipants: 32,
-      prize: "$100,000",
-      status: "finished",
-      registrationFee: "$2,000"
-    },
-    {
-      id: "4",
-      name: "Liga Juvenil 2024",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
-      location: "Club La Cancha",
-      startDate: "1 Abr",
-      endDate: "3 Abr",
-      participants: 12,
-      maxParticipants: 20,
-      prize: "$15,000",
-      status: "pending",
-      registrationFee: "$500"
-    }
-  ]);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addTournament = (newTournament: Omit<Tournament, 'id' | 'participants' | 'status'>) => {
-    const tournament: Tournament = {
-      ...newTournament,
-      id: Date.now().toString(), // Generar ID único
-      participants: 0, // Inicialmente sin participantes
-      status: 'pending' // Estado inicial
-    };
-    setTournaments(prev => [...prev, tournament]);
-    
-    // Enviar a Google Sheets si está configurado
-    sendToGoogleSheets(tournament, 'tournament').catch(console.error);
+  // Cargar torneos desde Supabase
+  useEffect(() => {
+    loadTournaments();
+  }, []);
+
+  const loadTournaments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading tournaments:', error);
+        return;
+      }
+
+      // Transformar datos de Supabase al formato esperado
+      const formattedTournaments: Tournament[] = data.map(tournament => ({
+        id: tournament.id,
+        name: tournament.name,
+        image: tournament.image || "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop",
+        location: tournament.location,
+        address: tournament.address,
+        startDate: tournament.start_date,
+        endDate: tournament.end_date,
+        startTime: tournament.start_time,
+        endTime: tournament.end_time,
+        participants: tournament.participants,
+        maxParticipants: tournament.max_participants,
+        prize: tournament.prize,
+        status: tournament.status as 'pending' | 'active' | 'finished',
+        registrationFee: tournament.registration_fee,
+        description: tournament.description,
+        staff: tournament.staff,
+        dataSource: tournament.data_source
+      }));
+
+      setTournaments(formattedTournaments);
+    } catch (error) {
+      console.error('Error loading tournaments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addTournament = async (newTournament: Omit<Tournament, 'id' | 'participants' | 'status'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .insert({
+          name: newTournament.name,
+          image: newTournament.image,
+          location: newTournament.location,
+          address: newTournament.address,
+          start_date: newTournament.startDate,
+          end_date: newTournament.endDate,
+          start_time: newTournament.startTime,
+          end_time: newTournament.endTime,
+          max_participants: newTournament.maxParticipants,
+          prize: newTournament.prize,
+          registration_fee: newTournament.registrationFee,
+          description: newTournament.description,
+          staff: newTournament.staff,
+          data_source: newTournament.dataSource,
+          participants: 0,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating tournament:', error);
+        return;
+      }
+
+      // Transformar datos y actualizar estado local
+      const tournament: Tournament = {
+        id: data.id,
+        name: data.name,
+        image: data.image || "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop",
+        location: data.location,
+        address: data.address,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        startTime: data.start_time,
+        endTime: data.end_time,
+        participants: data.participants,
+        maxParticipants: data.max_participants,
+        prize: data.prize,
+        status: data.status as 'pending' | 'active' | 'finished',
+        registrationFee: data.registration_fee,
+        description: data.description,
+        staff: data.staff,
+        dataSource: data.data_source
+      };
+
+      setTournaments(prev => [...prev, tournament]);
+      
+      // Enviar a Google Sheets si está configurado
+      sendToGoogleSheets(tournament, 'tournament').catch(console.error);
+    } catch (error) {
+      console.error('Error adding tournament:', error);
+    }
   };
 
   return (
-    <TournamentContext.Provider value={{ tournaments, addTournament }}>
+    <TournamentContext.Provider value={{ tournaments, loading, addTournament, loadTournaments }}>
       {children}
     </TournamentContext.Provider>
   );
