@@ -78,65 +78,75 @@ export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ childr
 
   const loadPairs = async () => {
     try {
-      const { data, error } = await supabase
+      // Cargar parejas y luego obtener los datos de los participantes por separado
+      const { data: pairsData, error: pairsError } = await supabase
         .from('participant_pairs')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error loading pairs:', error);
+      if (pairsError) {
+        console.error('Error loading pairs:', pairsError);
         return;
       }
 
-      // Para cada pareja, necesitamos obtener los datos de los participantes
-      const formattedPairs: ParticipantPair[] = [];
-      
-      for (const pair of data) {
-        const { data: player1Data } = await supabase
-          .from('participants')
-          .select('*')
-          .eq('id', pair.player1_id)
-          .single();
-          
-        const { data: player2Data } = await supabase
-          .from('participants')
-          .select('*')
-          .eq('id', pair.player2_id)
-          .single();
+      if (!pairsData || pairsData.length === 0) {
+        setPairs([]);
+        return;
+      }
 
-        if (player1Data && player2Data) {
-          formattedPairs.push({
+      // Obtener todos los IDs de participantes únicos
+      const participantIds = [
+        ...new Set([
+          ...pairsData.map(pair => pair.player1_id),
+          ...pairsData.map(pair => pair.player2_id)
+        ])
+      ];
+
+      // Cargar datos de participantes
+      const { data: participantsData, error: participantsError } = await supabase
+        .from('participants')
+        .select('*')
+        .in('id', participantIds);
+
+      if (participantsError) {
+        console.error('Error loading participants for pairs:', participantsError);
+        return;
+      }
+
+      // Crear mapa de participantes para búsqueda rápida
+      const participantsMap = new Map(
+        participantsData?.map(p => [p.id, {
+          id: p.id,
+          name: p.name,
+          email: p.email,
+          phone: p.phone,
+          category: p.category as 'principiante' | 'intermedio' | 'avanzado' | 'profesional',
+          tournamentId: p.tournament_id,
+          partnerId: p.partner_id,
+          partnerName: p.partner_name,
+          registrationDate: p.registration_date,
+          status: p.status as 'registered' | 'confirmed' | 'cancelled'
+        }]) || []
+      );
+
+      // Transformar datos a formato esperado
+      const formattedPairs: ParticipantPair[] = pairsData
+        .map(pair => {
+          const player1 = participantsMap.get(pair.player1_id);
+          const player2 = participantsMap.get(pair.player2_id);
+          
+          if (!player1 || !player2) return null;
+          
+          return {
             id: pair.id,
             tournamentId: pair.tournament_id,
-            player1: {
-              id: player1Data.id,
-              name: player1Data.name,
-              email: player1Data.email,
-              phone: player1Data.phone,
-              category: player1Data.category as 'principiante' | 'intermedio' | 'avanzado' | 'profesional',
-              tournamentId: player1Data.tournament_id,
-              partnerId: player1Data.partner_id,
-              partnerName: player1Data.partner_name,
-              registrationDate: player1Data.registration_date,
-              status: player1Data.status as 'registered' | 'confirmed' | 'cancelled'
-            },
-            player2: {
-              id: player2Data.id,
-              name: player2Data.name,
-              email: player2Data.email,
-              phone: player2Data.phone,
-              category: player2Data.category as 'principiante' | 'intermedio' | 'avanzado' | 'profesional',
-              tournamentId: player2Data.tournament_id,
-              partnerId: player2Data.partner_id,
-              partnerName: player2Data.partner_name,
-              registrationDate: player2Data.registration_date,
-              status: player2Data.status as 'registered' | 'confirmed' | 'cancelled'
-            },
+            player1,
+            player2,
             category: pair.category,
             registrationDate: pair.registration_date
-          });
-        }
-      }
+          };
+        })
+        .filter(Boolean) as ParticipantPair[];
 
       setPairs(formattedPairs);
     } catch (error) {
@@ -183,13 +193,9 @@ export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ childr
       setParticipants(prev => [...prev, participant]);
       
       // Actualizar contador de participantes en el torneo
-      const { error: rpcError } = await supabase.rpc('increment_tournament_participants', { 
+      await supabase.rpc('increment_tournament_participants', { 
         tournament_id: newParticipant.tournamentId 
       });
-      
-      if (rpcError) {
-        console.error('Error updating tournament participants count:', rpcError);
-      }
       
       // Enviar a Google Sheets si está configurado
       sendToGoogleSheets(participant, 'participant').catch(console.error);
@@ -222,13 +228,9 @@ export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ childr
       // Decrementar contador de participantes en el torneo
       const participant = participants.find(p => p.id === participantId);
       if (participant) {
-        const { error: rpcError } = await supabase.rpc('decrement_tournament_participants', { 
+        await supabase.rpc('decrement_tournament_participants', { 
           tournament_id: participant.tournamentId 
         });
-        
-        if (rpcError) {
-          console.error('Error updating tournament participants count:', rpcError);
-        }
       }
     } catch (error) {
       console.error('Error cancelling registration:', error);
