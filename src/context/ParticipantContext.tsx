@@ -80,11 +80,7 @@ export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ childr
     try {
       const { data, error } = await supabase
         .from('participant_pairs')
-        .select(`
-          *,
-          player1:player1_id(*),
-          player2:player2_id(*)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -92,37 +88,55 @@ export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ childr
         return;
       }
 
-      // Transformar datos de Supabase al formato esperado
-      const formattedPairs: ParticipantPair[] = data.map(pair => ({
-        id: pair.id,
-        tournamentId: pair.tournament_id,
-        player1: {
-          id: pair.player1.id,
-          name: pair.player1.name,
-          email: pair.player1.email,
-          phone: pair.player1.phone,
-          category: pair.player1.category as 'principiante' | 'intermedio' | 'avanzado' | 'profesional',
-          tournamentId: pair.player1.tournament_id,
-          partnerId: pair.player1.partner_id,
-          partnerName: pair.player1.partner_name,
-          registrationDate: pair.player1.registration_date,
-          status: pair.player1.status as 'registered' | 'confirmed' | 'cancelled'
-        },
-        player2: {
-          id: pair.player2.id,
-          name: pair.player2.name,
-          email: pair.player2.email,
-          phone: pair.player2.phone,
-          category: pair.player2.category as 'principiante' | 'intermedio' | 'avanzado' | 'profesional',
-          tournamentId: pair.player2.tournament_id,
-          partnerId: pair.player2.partner_id,
-          partnerName: pair.player2.partner_name,
-          registrationDate: pair.player2.registration_date,
-          status: pair.player2.status as 'registered' | 'confirmed' | 'cancelled'
-        },
-        category: pair.category,
-        registrationDate: pair.registration_date
-      }));
+      // Para cada pareja, necesitamos obtener los datos de los participantes
+      const formattedPairs: ParticipantPair[] = [];
+      
+      for (const pair of data) {
+        const { data: player1Data } = await supabase
+          .from('participants')
+          .select('*')
+          .eq('id', pair.player1_id)
+          .single();
+          
+        const { data: player2Data } = await supabase
+          .from('participants')
+          .select('*')
+          .eq('id', pair.player2_id)
+          .single();
+
+        if (player1Data && player2Data) {
+          formattedPairs.push({
+            id: pair.id,
+            tournamentId: pair.tournament_id,
+            player1: {
+              id: player1Data.id,
+              name: player1Data.name,
+              email: player1Data.email,
+              phone: player1Data.phone,
+              category: player1Data.category as 'principiante' | 'intermedio' | 'avanzado' | 'profesional',
+              tournamentId: player1Data.tournament_id,
+              partnerId: player1Data.partner_id,
+              partnerName: player1Data.partner_name,
+              registrationDate: player1Data.registration_date,
+              status: player1Data.status as 'registered' | 'confirmed' | 'cancelled'
+            },
+            player2: {
+              id: player2Data.id,
+              name: player2Data.name,
+              email: player2Data.email,
+              phone: player2Data.phone,
+              category: player2Data.category as 'principiante' | 'intermedio' | 'avanzado' | 'profesional',
+              tournamentId: player2Data.tournament_id,
+              partnerId: player2Data.partner_id,
+              partnerName: player2Data.partner_name,
+              registrationDate: player2Data.registration_date,
+              status: player2Data.status as 'registered' | 'confirmed' | 'cancelled'
+            },
+            category: pair.category,
+            registrationDate: pair.registration_date
+          });
+        }
+      }
 
       setPairs(formattedPairs);
     } catch (error) {
@@ -169,9 +183,13 @@ export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ childr
       setParticipants(prev => [...prev, participant]);
       
       // Actualizar contador de participantes en el torneo
-      await supabase.rpc('increment_tournament_participants', { 
+      const { error: rpcError } = await supabase.rpc('increment_tournament_participants', { 
         tournament_id: newParticipant.tournamentId 
       });
+      
+      if (rpcError) {
+        console.error('Error updating tournament participants count:', rpcError);
+      }
       
       // Enviar a Google Sheets si está configurado
       sendToGoogleSheets(participant, 'participant').catch(console.error);
@@ -204,9 +222,13 @@ export const ParticipantProvider: React.FC<ParticipantProviderProps> = ({ childr
       // Decrementar contador de participantes en el torneo
       const participant = participants.find(p => p.id === participantId);
       if (participant) {
-        await supabase.rpc('decrement_tournament_participants', { 
+        const { error: rpcError } = await supabase.rpc('decrement_tournament_participants', { 
           tournament_id: participant.tournamentId 
         });
+        
+        if (rpcError) {
+          console.error('Error updating tournament participants count:', rpcError);
+        }
       }
     } catch (error) {
       console.error('Error cancelling registration:', error);

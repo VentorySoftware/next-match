@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -31,6 +31,7 @@ export const ParticipantRegistration: React.FC<ParticipantRegistrationProps> = (
 }) => {
   const { registerParticipant } = useParticipants();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<ParticipantFormData>({
     resolver: zodResolver(participantSchema),
@@ -43,23 +44,37 @@ export const ParticipantRegistration: React.FC<ParticipantRegistrationProps> = (
     },
   });
 
-  const onSubmit = (data: ParticipantFormData) => {
-    registerParticipant({
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      category: data.category,
-      tournamentId,
-      partnerName: data.partnerName,
-    });
+  const onSubmit = async (data: ParticipantFormData) => {
+    if (isSubmitting) return;
     
-    toast({
-      title: "¡Inscripción exitosa!",
-      description: "Te has registrado al torneo correctamente.",
-    });
+    setIsSubmitting(true);
     
-    form.reset();
-    onSuccess?.();
+    try {
+      await registerParticipant({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        category: data.category,
+        tournamentId,
+        partnerName: data.partnerName,
+      });
+      
+      toast({
+        title: "¡Inscripción exitosa!",
+        description: "Te has registrado al torneo correctamente.",
+      });
+      
+      form.reset();
+      onSuccess?.();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo completar la inscripción. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -153,8 +168,8 @@ export const ParticipantRegistration: React.FC<ParticipantRegistrationProps> = (
               )}
             />
             
-            <Button type="submit" className="w-full">
-              Inscribirse al Torneo
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Inscribiendo..." : "Inscribirse al Torneo"}
             </Button>
           </form>
         </Form>

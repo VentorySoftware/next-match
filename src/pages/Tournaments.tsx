@@ -12,7 +12,7 @@ const Tournaments = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const { tournaments } = useTournaments();
+  const { tournaments, loading } = useTournaments();
 
   const filteredTournaments = tournaments.filter(tournament => {
     const matchesSearch = tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -71,15 +71,25 @@ const Tournaments = () => {
         </div>
 
         {/* Tournament Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTournaments.map((tournament, index) => (
-            <div key={tournament.id} style={{ animationDelay: `${index * 0.1}s` }}>
-              <TournamentCard {...tournament} />
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="bg-muted h-64 rounded-lg"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTournaments.map((tournament, index) => (
+              <div key={tournament.id} style={{ animationDelay: `${index * 0.1}s` }}>
+                <TournamentCard {...tournament} />
+              </div>
+            ))}
+          </div>
+        )}
 
-        {filteredTournaments.length === 0 && (
+        {!loading && filteredTournaments.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">
               No se encontraron torneos que coincidan con los filtros aplicados.
