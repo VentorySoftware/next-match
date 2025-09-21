@@ -1,1 +1,4 @@
 project_id = "cvmokakgnclbmksaaear"
+
+[functions.google-sheets-import]
+verify_jwt = false
