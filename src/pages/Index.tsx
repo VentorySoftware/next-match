@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
-import { Trophy, Users, Calendar, Award, ArrowRight } from "lucide-react";
+import { Trophy, Users, Calendar, Award, ArrowRight, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
+import { useAuth } from "@/context/AuthContext";
 import heroImage from "@/assets/hero-padel.jpg";
 
 const Index = () => {
+  const { user, userRole } = useAuth();
+  
   const features = [
     {
       icon: Trophy,
@@ -71,9 +74,22 @@ const Index = () => {
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                Conocer Más
-              </Button>
+              {user ? (
+                (userRole === 'admin' || userRole === 'organizer') && (
+                  <Link to="/create-tournament">
+                    <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                      Crear Torneo
+                    </Button>
+                  </Link>
+                )
+              ) : (
+                <Link to="/auth">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Iniciar Sesión
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
