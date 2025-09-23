@@ -10,15 +10,23 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { user, userRole, signOut } = useAuth();
 
+  const getDashboardLabel = () => {
+    switch (userRole) {
+      case 'admin': return 'Panel Admin';
+      case 'organizer': return 'Panel Organizador';
+      case 'participant': return 'Mi Panel';
+      default: return 'Mi Panel';
+    }
+  };
+
   const navItems = [
     { href: "/", icon: Home, label: "Inicio" },
     { href: "/tournaments", icon: Trophy, label: "Torneos" },
+    ...(user ? [
+      { href: "/dashboard", icon: Users, label: getDashboardLabel() },
+    ] : []),
     ...(userRole === 'admin' || userRole === 'organizer' ? [
       { href: "/create-tournament", icon: Plus, label: "Crear Torneo" },
-      { href: "/organizer", icon: Users, label: "Panel Organizador" },
-    ] : []),
-    ...(userRole === 'admin' ? [
-      { href: "/admin", icon: Shield, label: "Administración" },
     ] : []),
     { href: "/settings", icon: Settings, label: "Configuración" },
   ];

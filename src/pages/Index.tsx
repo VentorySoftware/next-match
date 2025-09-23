@@ -75,13 +75,11 @@ const Index = () => {
                 </Button>
               </Link>
               {user ? (
-                (userRole === 'admin' || userRole === 'organizer') && (
-                  <Link to="/create-tournament">
-                    <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                      Crear Torneo
-                    </Button>
-                  </Link>
-                )
+                <Link to="/dashboard">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                    Ir a Mi Panel
+                  </Button>
+                </Link>
               ) : (
                 <Link to="/auth">
                   <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">

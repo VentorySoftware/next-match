@@ -16,9 +16,8 @@ import Bracket from "./pages/Bracket";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
 import RoleBasedRoute from "./components/RoleBasedRoute";
-import AdminDashboard from "./components/AdminDashboard";
-import OrganizerDashboard from "./components/OrganizerDashboard";
 
 const queryClient = new QueryClient();
 
@@ -37,18 +36,10 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route 
-                      path="/admin" 
+                      path="/dashboard" 
                       element={
-                        <RoleBasedRoute allowedRoles={['admin']}>
-                          <AdminDashboard />
-                        </RoleBasedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/organizer" 
-                      element={
-                        <RoleBasedRoute allowedRoles={['admin', 'organizer']}>
-                          <OrganizerDashboard />
+                        <RoleBasedRoute allowedRoles={['admin', 'organizer', 'participant']}>
+                          <Dashboard />
                         </RoleBasedRoute>
                       } 
                     />
