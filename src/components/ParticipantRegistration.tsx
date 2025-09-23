@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,12 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useParticipants } from '@/context/ParticipantContext';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { LogIn, UserCheck } from 'lucide-react';
 
 const participantSchema = z.object({
-  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().min(10, 'El teléfono debe tener al menos 10 dígitos'),
   category: z.enum(['principiante', 'intermedio', 'avanzado', 'profesional']),
   partnerName: z.string().optional(),
 });
@@ -29,31 +29,46 @@ export const ParticipantRegistration: React.FC<ParticipantRegistrationProps> = (
   tournamentId, 
   onSuccess 
 }) => {
+  const { user, profile, loading } = useAuth();
   const { registerParticipant } = useParticipants();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<ParticipantFormData>({
     resolver: zodResolver(participantSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
       category: 'intermedio',
       partnerName: '',
     },
   });
 
+  // Auto-fill form with user data when user is logged in
+  useEffect(() => {
+    if (user && profile) {
+      form.setValue('category', 'intermedio');
+    }
+  }, [user, profile, form]);
+
   const onSubmit = async (data: ParticipantFormData) => {
     if (isSubmitting) return;
+    
+    if (!user || !profile) {
+      toast({
+        title: "Error",
+        description: "Debes estar logueado para inscribirte.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
       await registerParticipant({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
+        name: profile.full_name || profile.email,
+        email: profile.email,
+        phone: profile.phone || '',
         category: data.category,
         tournamentId,
         partnerName: data.partnerName,
@@ -77,58 +92,71 @@ export const ParticipantRegistration: React.FC<ParticipantRegistrationProps> = (
     }
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show login prompt if user is not authenticated
+  if (!user) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LogIn className="h-5 w-5" />
+            Iniciar Sesión Requerido
+          </CardTitle>
+          <CardDescription>
+            Debes estar registrado e iniciado sesión para inscribirte a un torneo
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            Para inscribirte a este torneo necesitas tener una cuenta y estar logueado. 
+            Esto nos permite gestionar tu participación y mantenerte informado sobre el torneo.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button onClick={() => navigate('/auth')} className="flex-1">
+              <LogIn className="mr-2 h-4 w-4" />
+              Iniciar Sesión
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/auth')}
+              className="flex-1"
+            >
+              Crear Cuenta
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Inscripción al Torneo</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <UserCheck className="h-5 w-5" />
+          Inscripción al Torneo
+        </CardTitle>
         <CardDescription>
-          Completa tus datos para inscribirte al torneo
+          Completa los datos adicionales para inscribirte al torneo
         </CardDescription>
+        <div className="text-sm text-muted-foreground bg-accent/50 p-3 rounded-lg">
+          <p><strong>Usuario:</strong> {profile?.full_name || profile?.email}</p>
+          <p><strong>Email:</strong> {profile?.email}</p>
+        </div>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre Completo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Tu nombre completo" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="tu@email.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Tu número de teléfono" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             
             <FormField
               control={form.control}
