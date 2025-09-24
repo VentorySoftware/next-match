@@ -12,6 +12,7 @@ import { ParticipantRegistration } from "@/components/ParticipantRegistration";
 import { ParticipantsList } from "@/components/ParticipantsList";
 import GoogleSheetsImporter from "@/components/GoogleSheetsImporter";
 import TournamentBrackets from "@/components/TournamentBrackets";
+import { ZonesDataViewer } from "@/components/ZonesDataViewer";
 import { useTournaments } from "@/context/TournamentContext";
 import { useParticipants } from "@/context/ParticipantContext";
 import { useState } from "react";
@@ -139,12 +140,13 @@ const Tournament = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Información</TabsTrigger>
             <TabsTrigger value="participants">Participantes ({participants.length})</TabsTrigger>
             <TabsTrigger value="register">Inscribirse</TabsTrigger>
             <TabsTrigger value="import">Importar</TabsTrigger>
             <TabsTrigger value="brackets">Llaves</TabsTrigger>
+            <TabsTrigger value="zones">Partidos por Zonas</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -265,6 +267,12 @@ const Tournament = () => {
               tournamentId={tournament.id}
               spreadsheetId={sheetsConfig.spreadsheetId}
               bracketsRange={sheetsConfig.bracketsRange}
+            />
+          </TabsContent>
+
+          <TabsContent value="zones">
+            <ZonesDataViewer 
+              defaultSpreadsheetId={sheetsConfig.spreadsheetId}
             />
           </TabsContent>
         </Tabs>
